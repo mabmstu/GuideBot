@@ -1,1 +1,1 @@
-web: python CityGuideHelper.py
+web: python GuideBot.py
