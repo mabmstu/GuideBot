@@ -1,25 +1,56 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Simple Bot to reply to Telegram messages.
 
-updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
-dispatcher = updater.dispatcher
+This is built on the API wrapper, see echobot2.py to see the same example built
+on the telegram.ext bot framework.
+This program is dedicated to the public domain under the CC0 license.
+"""
+import logging
+import telegram
+from telegram.error import NetworkError, Unauthorized
+from time import sleep
 
-# Обработка команд
-def startCommand(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
-def textMessage(bot, update):
-    response = 'Получил Ваше сообщение: ' + update.message.text
-    bot.send_message(chat_id=update.message.chat_id, text=response)
-    
-# Хендлеры
-start_command_handler = CommandHandler('start', startCommand)
-text_message_handler = MessageHandler(Filters.text, textMessage)
 
-# Добавляем хендлеры в диспетчер
-dispatcher.add_handler(start_command_handler)
-dispatcher.add_handler(text_message_handler)
+update_id = None
 
-# Начинаем поиск обновлений
-updater.start_polling()
 
-# Останавливаем бота, если были нажаты Ctrl + C
-updater.idle()
+def main():
+    """Run the bot."""
+    global update_id
+    # Telegram Bot Authorization Token
+    bot = telegram.Bot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
+
+    # get the first pending update_id, this is so we can skip over it in case
+    # we get an "Unauthorized" exception.
+    try:
+        update_id = bot.get_updates()[0].update_id
+    except IndexError:
+        update_id = None
+
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    while True:
+        try:
+            echo(bot)
+        except NetworkError:
+            sleep(1)
+        except Unauthorized:
+            # The user has removed or blocked the bot.
+            update_id += 1
+
+
+def echo(bot):
+    """Echo the message the user sent."""
+    global update_id
+    # Request updates after the last update_id
+    for update in bot.get_updates(offset=update_id, timeout=10):
+        update_id = update.update_id + 1
+
+        if update.message:  # your bot can receive updates without messages
+            # Reply to the message
+            update.message.reply_text(update.message.text)
+
+
+if __name__ == '__main__':
+    main()
