@@ -29,12 +29,12 @@ def pogodka(bot,update):
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
-text_message_handler = MessageHandler(Filters.text, textMessage)
-pogoda_message_handler = MessageHandler('погода', pogodka)
+#text_message_handler = MessageHandler(Filters.text, textMessage)
+pogoda_message_handler = MessageHandler(Filters.text, pogodka)
 
 # Добавляем хендлеры в диспетчер
 dispatcher.add_handler(start_command_handler)
-dispatcher.add_handler(text_message_handler)
+#dispatcher.add_handler(text_message_handler)
 dispatcher.add_handler(pogoda_message_handler)
 
 # Начинаем поиск обновлений
