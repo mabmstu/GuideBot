@@ -29,7 +29,7 @@ def pogodka(bot,update):
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
-pogoda_message_handler = StringCommandHandler("weather", pogodka)
+pogoda_message_handler = CommandHandler('weather', pogodka)
 text_message_handler = MessageHandler(Filters.text, textMessage)
 
 # Добавляем хендлеры в диспетчер
