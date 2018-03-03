@@ -1,4 +1,4 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, StringCommandHandler
 import requests, bs4
 
 updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
@@ -29,16 +29,13 @@ def pogodka(bot,update):
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
-pogoda_message_handler = MessageHandler(Filters.text, pogodka)
+pogoda_message_handler = StringCommandHandler('погода', pogodka)
 text_message_handler = MessageHandler(Filters.text, textMessage)
 
 # Добавляем хендлеры в диспетчер
 dispatcher.add_handler(start_command_handler)
-
-if Filtres.text == "погода":
-    dispatcher.add_handler(pogoda_message_handler)
-else:
-    dispatcher.add_handler(text_message_handler)
+dispatcher.add_handler(pogoda_message_handler)
+dispatcher.add_handler(text_message_handler)
 
 # Начинаем поиск обновлений
 updater.start_polling()
