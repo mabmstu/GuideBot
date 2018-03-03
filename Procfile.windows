@@ -1,1 +1,1 @@
-web: python GuideBot.py runserver 0.0.0.0:80
+web: python GuideBot.py runserver "0.0.0.0:$PORT"
