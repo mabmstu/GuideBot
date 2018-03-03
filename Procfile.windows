@@ -1,1 +1,1 @@
-web: python GuideBot.py runserver process.env.PORT
+web: python GuideBot.py runserver 0.0.0.0:80
