@@ -13,7 +13,7 @@ def textMessage(bot, update):
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
-date_command_handler = CommandHandler('date',datetime.date()) 
+date_command_handler = CommandHandler('date',datetime.datetime.date()) 
 text_message_handler = MessageHandler(Filters.text, textMessage)
 
 # Добавляем хендлеры в диспетчер
