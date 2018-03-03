@@ -1,1 +1,1 @@
-web: python GuideBot.py runserver 0.0.0.0:5000
+web: python GuideBot.py
