@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import datetime
 
 updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
 dispatcher = updater.dispatcher
@@ -7,15 +8,17 @@ dispatcher = updater.dispatcher
 def startCommand(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
 def textMessage(bot, update):
-    response = 'Получил Ваше сообщение: ' + update.message.text
+    response = 'Устал получать ваши сообщения: ' + update.message.text
     bot.send_message(chat_id=update.message.chat_id, text=response)
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
+date_command_handler = CommandHandler('date',datetime.date()) 
 text_message_handler = MessageHandler(Filters.text, textMessage)
 
 # Добавляем хендлеры в диспетчер
 dispatcher.add_handler(start_command_handler)
+dispatcher.add_handler(date_command_handler)
 dispatcher.add_handler(text_message_handler)
 
 # Начинаем поиск обновлений
