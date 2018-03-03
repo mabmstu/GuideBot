@@ -10,7 +10,7 @@ def startCommand(bot, update):
 def textMessage(bot, update):
     response = 'Устал получать ваши сообщения: ' + update.message.text
     bot.send_message(chat_id=update.message.chat_id, text=response)
-def pogodka(bot,update)
+def pogodka(bot,update):
     s=requests.get('https://sinoptik.com.ru/погода-москва')
     b=bs4.BeautifulSoup(s.text, "html.parser")
     p3=b.select('.temperature .p3')
@@ -30,7 +30,7 @@ def pogodka(bot,update)
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
 text_message_handler = MessageHandler(Filters.text, textMessage)
-pogoda_message_handler = MessageHandler(Filters.text, pogodka)
+pogoda_message_handler = MessageHandler('погода', pogodka)
 
 # Добавляем хендлеры в диспетчер
 dispatcher.add_handler(start_command_handler)
