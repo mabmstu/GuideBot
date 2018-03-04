@@ -1,1 +1,2 @@
-web: gunicorn -b "0.0.0.0:$PORT" GuideBot:app
+web: (python -m http.server $PORT &) && (python GuideBot.py)
+
