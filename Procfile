@@ -1,1 +1,1 @@
-web: gunicorn -b 0.0.0.0:$PORT app:GuideBot.py 
+web: gunicorn python GuideBot.py 
