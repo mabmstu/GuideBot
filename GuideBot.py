@@ -21,10 +21,11 @@ def pogodka(bot,update):
     pogoda3=p5[0].getText()
     p6=b.select('.temperature .p6')
     pogoda4=p6[0].getText()
-    response = 'Утром :' + pogoda1 + ' ' + pogoda2 + ',' + 'Днём :' + pogoda3 + ' ' + pogoda4
+    p=b.select('.rSide .description')
+    pogoda=p[0].getText()
+    response = 'Утром :' + pogoda1 + ' ' + pogoda2 + '\n' + 'Днём :' + pogoda3 + ' ' + pogoda4 + '\n' + pogoda.strip()
     bot.send_message(chat_id=update.message.chat_id, text=response)
-    #p=b.select('.rSide .description')
-    #pogoda=p[0].getText()
+
     #print(pogoda.strip())
     
 # Хендлеры
