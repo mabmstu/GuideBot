@@ -1,1 +1,1 @@
-web: python GuideBot.py runserver "0.0.0.0:$PORT|80"
+web: gunicorn -b 0.0.0.0:$PORT app:GuideBot.py 
