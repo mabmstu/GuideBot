@@ -10,7 +10,7 @@ def startCommand(bot, update):
     
 def textMessage(bot, update):
     response = 'Устал получать ваши сообщения: ' + update.message.text
-    if update.message.text == "погода".lower():
+    if update.message.text.lower() == "погода":
         response = pogodka
     bot.send_message(chat_id=update.message.chat_id, text=response)
     
@@ -29,6 +29,7 @@ def pogodka(bot,update):
     pogoda=p[0].getText()
     response = 'Утром :' + pogoda1 + ' ' + pogoda2 + '\n' + 'Днём :' + pogoda3 + ' ' + pogoda4 + '\n' + pogoda.strip()
     bot.send_message(chat_id=update.message.chat_id, text=response)
+    return response
 
     
 # Хендлеры
