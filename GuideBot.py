@@ -7,9 +7,13 @@ dispatcher = updater.dispatcher
 # Обработка команд
 def startCommand(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
+    
 def textMessage(bot, update):
     response = 'Устал получать ваши сообщения: ' + update.message.text
+    if update.message.text == "погода".lower():
+        response = pogodka
     bot.send_message(chat_id=update.message.chat_id, text=response)
+    
 def pogodka(bot,update):
     s=requests.get('https://sinoptik.com.ru/погода-москва')
     b=bs4.BeautifulSoup(s.text, "html.parser")
@@ -26,7 +30,6 @@ def pogodka(bot,update):
     response = 'Утром :' + pogoda1 + ' ' + pogoda2 + '\n' + 'Днём :' + pogoda3 + ' ' + pogoda4 + '\n' + pogoda.strip()
     bot.send_message(chat_id=update.message.chat_id, text=response)
 
-    #print(pogoda.strip())
     
 # Хендлеры
 start_command_handler = CommandHandler('start', startCommand)
