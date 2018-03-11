@@ -132,12 +132,46 @@ def ask_yes_or_no(question):
 
 
 def discuss_good_python(name):
-    answer = yield "Мы с вами, %s, поразительно похожи! Что вам нравится в нём больше всего?" % name
+    answer = yield "Давайте посмотрим, что у нас тут есть..."
+    pages = []
+    index_page = requests.get('https://kudago.com/ufa/attractions/')
+    tree_index = html.fromstring(index_page.content)
+
+    div = tree_index.xpath('//div[@class="clear-filters-container"]')
+    div_res = div[0].attrib['data-obj-count']
+
+    answer = yield "Найдено" + div_res + "досторимечательности"
+    """
+    page_count = int(div_res) // 30 + 1
+    pages.append(requests.get('https://kudago.com/ufa/attractions/'))
+    pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
+    tree = []
+    names = []
+    adress = []
+    brief_description = []
+
+    for i in range(page_count):
+        tree.append(html.fromstring(pages[i].content))
+        names.append(tree[i].xpath('//a[@class="post-title-link"]//span/text()'))
+        adress.append(tree[i].xpath('//span[@class="post-detail-address-link"]//span/text()'))
+        brief_description.append(tree[i].xpath('//div[@class="post-description"]/text()'))
+
+    n = 30
+    for i in range(2):
+        if i == 1:
+            n = int(div_res)-30
+        for j in range(n):
+             print('Наименование:',names[i][j],'\nАдрес:', adress[i][j])
+             print('Краткое описание:', brief_description[i][j].strip(), '\n')
+             """
+    """
     likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
     if likes_article:
         answer = yield "Чудно!"
     else:
         answer = yield "Жалко."
+    """
+    
     return answer
 
 
