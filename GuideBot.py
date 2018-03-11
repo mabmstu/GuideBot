@@ -115,8 +115,8 @@ def dialog():
     # убираем ведущие знаки пунктуации, оставляем только 
     # первую компоненту имени, пишем её с заглавной буквы
     name = answer.text.rstrip(".!").split()[0].capitalize()
-    answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?"
-    likes_python = yield from ask_yes_or_no("Приятно познакомиться, %s. Хотели бы Вы ознакомиться с достопримечательностями этого города?" % name)
+    answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?" %name
+    likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?" % name)
     if likes_python:
         answer = yield from discuss_good_python(name)
     else:
@@ -148,7 +148,7 @@ def discuss_bad_python(name):
         tree_city = html.fromstring(city_page.content)
         descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
         for i in descriotion:
-            answer = yield i
+            answer = i
     else:
         answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
