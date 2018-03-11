@@ -143,13 +143,13 @@ def discuss_good_python(name):
 
 def discuss_bad_python(name):
     likes_article = yield from ask_yes_or_no(
-        "Окей. Как насчет нескольких фактов? Просто скажите да или нет")
+        "Окей. Как насчет интересного факта? Просто скажите да или нет")
     if likes_article:
         city_page = requests.get('https://fishki.net/1588575-15-faktov-ob-ufe-i-ufimcah-kotorye-nuzhno-znat-gostjam.html/')
         tree_city = html.fromstring(city_page.content)
         descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
         #for i in descriotion:
-        answer = yield descriotion[random.randrange(0,len(descriotion))]
+        answer = yield descriotion[10][4:]
     else:
         answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
