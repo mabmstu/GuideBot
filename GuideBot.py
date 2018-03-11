@@ -2,10 +2,11 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Strin
 import requests
 import collections
 
+"""
 updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
 dispatcher = updater.dispatcher
 
-"""
+
 # Обработка команд
 def startCommand(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
@@ -52,6 +53,21 @@ from telegram.ext import Filters
 from telegram.ext import MessageHandler
 from telegram.ext import Updater
 
+class Message(object):
+    def __init__(self, text, **options):
+        self.text = text
+        self.options = options
+
+
+class Markdown(Message):
+    def __init__(self, text, **options):
+        super(Markup, self).__init__(text, parse_mode="Markdown", **options)
+
+
+class HTML(Message):
+    def __init__(self, text, **options):
+        super(HTML, self).__init__(text, parse_mode="HTML", **options)
+
 
 class DialogBot(object):
 
@@ -88,7 +104,12 @@ class DialogBot(object):
             answer = next(self.handlers[chat_id])
         # отправляем полученный ответ пользователю
         print("Answer: %r" % answer)
-        bot.sendMessage(chat_id=chat_id, text=answer)
+        self._send_answer(bot, chat_id, answer)
+
+    def _send_answer(self, bot, chat_id, answer):
+        if isinstance(answer, str):
+            answer = Message(answer)
+        bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
 
 def dialog():
     answer = yield "Здравствуйте! Меня забыли наградить именем, а как зовут вас?"
@@ -103,14 +124,14 @@ def dialog():
 
 
 def ask_yes_or_no(question):
-    """Спросить вопрос и дождаться ответа, содержащего «да» или «нет».
+        """Спросить вопрос и дождаться ответа, содержащего «да» или «нет».
 
     Возвращает:
         bool
     """
     answer = yield question
     while not ("да" in answer.text.lower() or "нет" in answer.text.lower()):
-        answer = yield "Так да или нет?"
+        answer = yield HTML("Так <b>да</b> или <b>нет</b>?")
     return "да" in answer.text.lower()
 
 
@@ -138,5 +159,5 @@ def discuss_bad_python(name):
 
 
 if __name__ == "__main__":
-    dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)
+    dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)s
     dialog_bot.start()
