@@ -119,7 +119,7 @@ def dialog():
     answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?" %name
     likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?")
     if likes_python:
-        answer = yield from discuss_good_python(name)
+        #answer = yield from discuss_good_python(name)
         answer = yield from Ufa(name)
     else:
         answer = yield from discuss_bad_python(name)
