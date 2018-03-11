@@ -147,6 +147,13 @@ def discuss_good_python(name):
 def Ufa(name):
     #answer = yield
     pages = []
+    index_page = requests.get('https://kudago.com/ufa/attractions/')
+    tree_index = html.fromstring(index_page.content)
+
+    div = tree_index.xpath('//div[@class="clear-filters-container"]')
+    div_res = div[0].attrib['data-obj-count']
+
+    print('Найдено', div_res ,'досторимечательности')
     page_count = int(div_res) // 30 + 1
     pages.append(requests.get('https://kudago.com/ufa/attractions/'))
     pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
@@ -154,7 +161,7 @@ def Ufa(name):
     names = []
     adress = []
     brief_description = []
-    
+
     for i in range(page_count):
         tree.append(html.fromstring(pages[i].content))
         names.append(tree[i].xpath('//a[@class="post-title-link"]//span/text()'))
