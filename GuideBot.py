@@ -134,7 +134,7 @@ def _send_answer(self, bot, chat_id, answer):
         # надо не забыть отправить последнее встреченное сообщение.
         if current_message is not None:
             bot.sendMessage(chat_id=chat_id, text=current_message.text, **current_message.options)
-
+"""
         def _convert_answer_part(self, answer_part):
             if isinstance(answer_part, str):
                 return Message(answer_part)
@@ -151,7 +151,7 @@ def _send_answer(self, bot, chat_id, answer):
                             # она!
                         return ReplyKeyboardMarkup(map(list, answer_part), one_time_keyboard=True)
             return answer_part
-
+"""
 def dialog():
     answer = yield "Здравствуйте! Меня забыли наградить именем, а как зовут вас?"
     # убираем ведущие знаки пунктуации, оставляем только 
