@@ -111,10 +111,11 @@ class DialogBot(object):
         bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
 
 def dialog():
-    answer = yield "Здравствуйте! В каком городе Вы сейчас находитесь?"
+    answer = yield "Здравствуйте! Как Вас зовут?"
     # убираем ведущие знаки пунктуации, оставляем только 
     # первую компоненту имени, пишем её с заглавной буквы
     name = answer.text.rstrip(".!").split()[0].capitalize()
+    answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?"
     likes_python = yield from ask_yes_or_no("Приятно познакомиться, %s. Хотели бы Вы ознакомиться с достопримечательностями этого города?" % name)
     if likes_python:
         answer = yield from discuss_good_python(name)
@@ -140,9 +141,8 @@ def discuss_good_python(name):
 
 
 def discuss_bad_python(name):
-    answer = yield "Ну и ладно." 
     likes_article = yield from ask_yes_or_no(
-        "Как насчет нескольких фактов? Просто скажите да или нет")
+        "Окей. Как насчет нескольких фактов? Просто скажите да или нет")
     if likes_article:
         city_page = requests.get('https://fishki.net/1588575-15-faktov-ob-ufe-i-ufimcah-kotorye-nuzhno-znat-gostjam.html/')
         tree_city = html.fromstring(city_page.content)
