@@ -4,6 +4,7 @@ chardet==3.0.4
 future==0.16.0
 gunicorn==19.7.1
 idna==2.6
+lxml==4.1.1
 pew==1.1.2
 pipenv==10.1.0
 psutil==5.3.1
