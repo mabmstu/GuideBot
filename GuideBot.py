@@ -116,7 +116,7 @@ def dialog():
     # первую компоненту имени, пишем её с заглавной буквы
     name = answer.text.rstrip(".!").split()[0].capitalize()
     answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?" %name
-    likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?" % name)
+    likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?")
     if likes_python:
         answer = yield from discuss_good_python(name)
     else:
