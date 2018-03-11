@@ -145,7 +145,8 @@ def discuss_good_python(name):
     return answer
 
 def Ufa(name):
-    #answer = yield 
+    #answer = yield
+    pages = []
     page_count = int(div_res) // 30 + 1
     pages.append(requests.get('https://kudago.com/ufa/attractions/'))
     pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
