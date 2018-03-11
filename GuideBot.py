@@ -154,5 +154,5 @@ def discuss_bad_python(name):
 
 
 if __name__ == "__main__":
-    dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)s
+    dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)
     dialog_bot.start()
