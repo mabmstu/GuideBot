@@ -106,10 +106,51 @@ class DialogBot(object):
         print("Answer: %r" % answer)
         self._send_answer(bot, chat_id, answer)
 
-    def _send_answer(self, bot, chat_id, answer):
-        if isinstance(answer, str):
-            answer = Message(answer)
-        bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
+def _send_answer(self, bot, chat_id, answer):
+        print("Sending answer %r to %s" % (answer, chat_id))
+        if isinstance(answer, collections.abc.Iterable) and not isinstance(answer, str):
+            # мы получили несколько объектов -- сперва каждый надо обработать
+            answer = list(map(self._convert_answer_part, answer))
+        else:
+            # мы получили один объект -- сводим к более общей задаче
+            answer = [self._convert_answer_part(answer)]
+        
+        # перед тем, как отправить очередное сообщение, идём вперёд в поисках
+        # «довесков» -- клавиатуры там или в перспективе ещё чего-нибудь
+        current_message = None
+        for part in answer:
+            if isinstance(part, Message):
+                if current_message is not None:
+                    # поскольку не все объекты исчерпаны, пусть это сообщение
+                    # не вызывает звоночек (если не указано обратное)
+                    options = dict(current_message.options)
+                    options.setdefault("disable_notification", True)
+                    bot.sendMessage(chat_id=chat_id, text=current_message.text, **options)
+                current_message = part
+            if isinstance(part, ReplyMarkup):
+                # ага, а вот и довесок! добавляем текущему сообщению.
+                # нет сообщения -- ну извините, это ошибка.
+                current_message.options["reply_markup"] = part
+        # надо не забыть отправить последнее встреченное сообщение.
+        if current_message is not None:
+            bot.sendMessage(chat_id=chat_id, text=current_message.text, **current_message.options)
+
+def _convert_answer_part(self, answer_part):
+    if isinstance(answer_part, str):
+        return Message(answer_part)
+    if isinstance(answer_part, collections.abc.Iterable):
+            # клавиатура?
+        answer_part = list(answer_part)
+        if isinstance(answer_part[0], str):
+                # она! оформляем как горизонтальный ряд кнопок.
+                # кстати, все наши клавиатуры одноразовые -- нам пока хватит.
+            return ReplyKeyboardMarkup([answer_part], one_time_keyboard=True)
+        elif isinstance(answer_part[0], collections.abc.Iterable):
+                # двумерная клавиатура?
+            if isinstance(answer_part[0][0], str):
+                    # она!
+                return ReplyKeyboardMarkup(map(list, answer_part), one_time_keyboard=True)
+    return answer_part
 
 def dialog():
     answer = yield "Здравствуйте! Меня забыли наградить именем, а как зовут вас?"
@@ -124,19 +165,30 @@ def dialog():
 
 
 def ask_yes_or_no(question):
-    answer = yield question
+    """Спросить вопрос и дождаться ответа, содержащего «да» или «нет».
+
+    Возвращает:
+        bool
+    """
+    answer = yield (question, ["Да.", "Нет."])
     while not ("да" in answer.text.lower() or "нет" in answer.text.lower()):
         answer = yield HTML("Так <b>да</b> или <b>нет</b>?")
     return "да" in answer.text.lower()
 
 
-def discuss_good_python(name):
-    answer = yield "Мы с вами, %s, поразительно похожи! Что вам нравится в нём больше всего?" % name
-    likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
+def discuss_bad_python(name):
+    answer = yield "Ай-яй-яй. %s, фу таким быть! Что именно вам так не нравится?" % name
+    likes_article = yield from ask_yes_or_no(
+        "Ваша позиция имеет право на существование. Статья "
+        "на Хабре вам, надо полагать, тоже не понравилась?")
     if likes_article:
-        answer = yield "Чудно!"
+        answer = yield "Ну и ладно."
     else:
-        answer = yield "Жалко."
+        answer = yield (
+            "Что «нет»? «Нет, не понравилась» или «нет, понравилась»?",
+            ["Нет, не понравилась!", "Нет, понравилась!"]
+        )
+        answer = yield "Спокойно, это у меня юмор такой."
     return answer
 
 
