@@ -172,7 +172,7 @@ def Ufa(name):
         if i == 1:
             n = int(div_res)-30
         for j in range(n):
-            answer =  "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
+            answer = yield "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
     return answer
 """
        likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
