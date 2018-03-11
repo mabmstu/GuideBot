@@ -120,6 +120,7 @@ def dialog():
     likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?")
     if likes_python:
         answer = yield from discuss_good_python(name)
+        bot.sendMessage(chat_id=chat_id, text = "text")
     else:
         answer = yield from discuss_bad_python(name)
 
@@ -141,7 +142,8 @@ def discuss_good_python(name):
     div_res = div[0].attrib['data-obj-count']
 
     answer = yield "Давайте посмотрим, что у нас тут есть...\n" + "Найдено " + div_res + " досторимечательности"
-    """
+    return answer
+"""
     page_count = int(div_res) // 30 + 1
     pages.append(requests.get('https://kudago.com/ufa/attractions/'))
     pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
@@ -149,7 +151,7 @@ def discuss_good_python(name):
     names = []
     adress = []
     brief_description = []
-
+    
     for i in range(page_count):
         tree.append(html.fromstring(pages[i].content))
         names.append(tree[i].xpath('//a[@class="post-title-link"]//span/text()'))
@@ -163,8 +165,6 @@ def discuss_good_python(name):
         for j in range(n):
              print('Наименование:',names[i][j],'\nАдрес:', adress[i][j])
              print('Краткое описание:', brief_description[i][j].strip(), '\n')
-             """
-    """
     likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
     if likes_article:
         answer = yield "Чудно!"
@@ -172,7 +172,7 @@ def discuss_good_python(name):
         answer = yield "Жалко."
     """
     
-    return answer
+    
 
 
 def discuss_bad_python(name):
@@ -187,6 +187,8 @@ def discuss_bad_python(name):
     else:
         answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
+
+#def Ufa():
 
 if __name__ == "__main__":
     dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)
