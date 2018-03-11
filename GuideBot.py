@@ -124,11 +124,6 @@ def dialog():
 
 
 def ask_yes_or_no(question):
-        """Спросить вопрос и дождаться ответа, содержащего «да» или «нет».
-
-    Возвращает:
-        bool
-    """
     answer = yield question
     while not ("да" in answer.text.lower() or "нет" in answer.text.lower()):
         answer = yield HTML("Так <b>да</b> или <b>нет</b>?")
