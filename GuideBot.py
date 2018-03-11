@@ -107,6 +107,11 @@ class DialogBot(object):
         self._send_answer(bot, chat_id, answer)
 
     def _send_answer(self, bot, chat_id, answer):
+        if isinstance(answer, str):
+            answer = Message(answer)
+        bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
+"""
+    def _send_answer(self, bot, chat_id, answer):
             print("Sending answer %r to %s" % (answer, chat_id))
             if isinstance(answer, collections.abc.Iterable) and not isinstance(answer, str):
                 # мы получили несколько объектов -- сперва каждый надо обработать
@@ -151,7 +156,7 @@ class DialogBot(object):
                                     # она!
                             return ReplyKeyboardMarkup(map(list, answer_part), one_time_keyboard=True)
                 return answer_part
-
+"""
 def dialog():
     answer = yield "Здравствуйте! Меня забыли наградить именем, а как зовут вас?"
     # убираем ведущие знаки пунктуации, оставляем только 
@@ -184,10 +189,7 @@ def discuss_bad_python(name):
     if likes_article:
         answer = yield "Ну и ладно."
     else:
-        answer = yield (
-            "Что «нет»? «Нет, не понравилась» или «нет, понравилась»?",
-            ["Нет, не понравилась!", "Нет, понравилась!"]
-        )
+        answer = yield "Что «нет»? «Нет, не понравилась» или «нет, понравилась»?"
         answer = yield "Спокойно, это у меня юмор такой."
     return answer
 
