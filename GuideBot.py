@@ -191,20 +191,6 @@ def discuss_bad_python(name):
         answer = yield "Спокойно, это у меня юмор такой."
     return answer
 
-
-def discuss_bad_python(name):
-    answer = yield "Ай-яй-яй. %s, фу таким быть! Что именно вам так не нравится?" % name
-    likes_article = yield from ask_yes_or_no(
-        "Ваша позиция имеет право на существование. Статья "
-        "на Хабре вам, надо полагать, тоже не понравилась?")
-    if likes_article:
-        answer = yield "Ну и ладно."
-    else:
-        answer = yield "Что «нет»? «Нет, не понравилась» или «нет, понравилась»?"
-        answer = yield "Спокойно, это у меня юмор такой."
-    return answer
-
-
 if __name__ == "__main__":
     dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)
     dialog_bot.start()
