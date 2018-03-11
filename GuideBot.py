@@ -120,7 +120,7 @@ def dialog():
     likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?")
     if likes_python:
         answer = yield from discuss_good_python(name)
-        bot.sendMessage(chat_id=chat_id, text = "text")
+        answer = yield from Ufa(name)
     else:
         answer = yield from discuss_bad_python(name)
 
