@@ -143,7 +143,9 @@ def discuss_good_python(name):
 
     answer = yield "Давайте посмотрим, что у нас тут есть...\n" + "Найдено " + div_res + " досторимечательности"
     return answer
-"""
+
+def Ufa(name):
+    #answer = yield 
     page_count = int(div_res) // 30 + 1
     pages.append(requests.get('https://kudago.com/ufa/attractions/'))
     pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
@@ -163,16 +165,15 @@ def discuss_good_python(name):
         if i == 1:
             n = int(div_res)-30
         for j in range(n):
-             print('Наименование:',names[i][j],'\nАдрес:', adress[i][j])
-             print('Краткое описание:', brief_description[i][j].strip(), '\n')
-    likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
+             answer = yield "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
+    return answer
+"""
+       likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
     if likes_article:
         answer = yield "Чудно!"
     else:
         answer = yield "Жалко."
     """
-    
-    
 
 
 def discuss_bad_python(name):
