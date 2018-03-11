@@ -51,11 +51,6 @@ updater.start_polling()
 # Останавливаем бота, если были нажаты Ctrl + C
 updater.idle()
 """
-import collections
-
-from telegram.ext import Filters
-from telegram.ext import MessageHandler
-from telegram.ext import Updater
 
 class Message(object):
     def __init__(self, text, **options):
@@ -116,11 +111,11 @@ class DialogBot(object):
         bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
 
 def dialog():
-    answer = yield "Здравствуйте! Меня забыли наградить именем, а как зовут вас?"
+    answer = yield "Здравствуйте! В каком городе Вы сейчас находитесь?"
     # убираем ведущие знаки пунктуации, оставляем только 
     # первую компоненту имени, пишем её с заглавной буквы
     name = answer.text.rstrip(".!").split()[0].capitalize()
-    likes_python = yield from ask_yes_or_no("Приятно познакомиться, %s. Вам нравится Питон?" % name)
+    likes_python = yield from ask_yes_or_no("Приятно познакомиться, %s. Хотели бы Вы ознакомиться с достопримечательностями этого города?" % name)
     if likes_python:
         answer = yield from discuss_good_python(name)
     else:
@@ -145,15 +140,17 @@ def discuss_good_python(name):
 
 
 def discuss_bad_python(name):
-    answer = yield "Ай-яй-яй. %s, фу таким быть! Что именно вам так не нравится?" % name
+    answer = yield "Ну и ладно." 
     likes_article = yield from ask_yes_or_no(
-        "Ваша позиция имеет право на существование. Статья "
-        "на Хабре вам, надо полагать, тоже не понравилась?")
+        "Как насчет нескольких фактов? Просто скажите да или нет")
     if likes_article:
-        answer = yield "Ну и ладно."
+        city_page = requests.get('https://fishki.net/1588575-15-faktov-ob-ufe-i-ufimcah-kotorye-nuzhno-znat-gostjam.html/')
+        tree_city = html.fromstring(city_page.content)
+        descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
+        for i in descriotion:
+            answer = yield i
     else:
-        answer = yield "Что «нет»? «Нет, не понравилась» или «нет, понравилась»?"
-        answer = yield "Спокойно, это у меня юмор такой."
+        answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
 
 if __name__ == "__main__":
