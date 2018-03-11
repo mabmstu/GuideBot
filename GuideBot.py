@@ -148,7 +148,7 @@ def discuss_bad_python(name):
         tree_city = html.fromstring(city_page.content)
         descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
         for i in descriotion:
-            answer = i
+            answer = yield i.strip()
     else:
         answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
