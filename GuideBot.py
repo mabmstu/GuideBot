@@ -1,6 +1,10 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, StringCommandHandler
 import requests
 import collections
+from lxml import html
+import requests
+from lxml import etree
+
 
 """
 updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
