@@ -4,6 +4,7 @@ import collections
 from lxml import html
 import requests
 from lxml import etree
+import random
 
 
 """
@@ -148,7 +149,7 @@ def discuss_bad_python(name):
         tree_city = html.fromstring(city_page.content)
         descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
         #for i in descriotion:
-        answer = yield descriotion[0]
+        answer = yield descriotion[random.randrange(0,len(descriotion))]
     else:
         answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
     return answer
