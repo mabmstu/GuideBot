@@ -168,12 +168,12 @@ def Ufa(name):
         adress.append(tree[i].xpath('//span[@class="post-detail-address-link"]//span/text()'))
         brief_description.append(tree[i].xpath('//div[@class="post-description"]/text()'))
 
-    #n = 30
-    #for i in range(2):
-        #if i == 1:
-            #n = int(div_res)-30
-        #for j in range(n):
-    answer = yield "Наименование: " + names[0][0] + '\nАдрес: '+ adress[0][0] +"Краткое описание: " + brief_description[0][0].strip() + "\n"
+    n = 30
+    for i in range(page_count):
+        if i == 1:
+            n = int(div_res)-30
+        for j in range(n):
+            answer = yield "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
     return answer
 """
        likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
