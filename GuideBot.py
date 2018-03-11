@@ -145,7 +145,6 @@ def discuss_good_python(name):
     return answer
 
 def Ufa(name):
-    #answer = yield
     pages = []
     index_page = requests.get('https://kudago.com/ufa/attractions/')
     tree_index = html.fromstring(index_page.content)
@@ -173,7 +172,7 @@ def Ufa(name):
         if i == 1:
             n = int(div_res)-30
         for j in range(n):
-            answer = yield "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
+            answer =  "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
     return answer
 """
        likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
