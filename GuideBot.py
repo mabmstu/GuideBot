@@ -132,7 +132,7 @@ def ask_yes_or_no(question):
 
 
 def discuss_good_python(name):
-    answer = yield "Давайте посмотрим, что у нас тут есть..."
+    #answer = yield 
     pages = []
     index_page = requests.get('https://kudago.com/ufa/attractions/')
     tree_index = html.fromstring(index_page.content)
@@ -140,7 +140,7 @@ def discuss_good_python(name):
     div = tree_index.xpath('//div[@class="clear-filters-container"]')
     div_res = div[0].attrib['data-obj-count']
 
-    answer = yield "Найдено" + div_res + "досторимечательности"
+    answer = yield "Давайте посмотрим, что у нас тут есть...\n" + "Найдено " + div_res + " досторимечательности"
     """
     page_count = int(div_res) // 30 + 1
     pages.append(requests.get('https://kudago.com/ufa/attractions/'))
