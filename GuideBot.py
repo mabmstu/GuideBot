@@ -1,203 +1,154 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, StringCommandHandler
-import requests
-import collections
-from lxml import html
-import requests
-from lxml import etree
-import random
-
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Simple Bot to reply to Telegram messages
+# This program is dedicated to the public domain under the CC0 license.
 """
-updater = Updater(token='495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI') # Токен API к Telegram
-dispatcher = updater.dispatcher
+This Bot uses the Updater class to handle the bot.
 
+First, a few callback functions are defined. Then, those functions are passed to
+the Dispatcher and registered at their respective places.
+Then, the bot is started and runs until we press Ctrl-C on the command line.
 
-# Обработка команд
-def startCommand(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text='Привет, давай пообщаемся?')
-    
-def textMessage(bot, update):
-    response = 'Устал получать ваши сообщения: ' + update.message.text
-    bot.send_message(chat_id=update.message.chat_id, text=response)
-    
-def pogodka(bot,update):
-    s=requests.get('https://sinoptik.com.ru/погода-москва')
-    b=bs4.BeautifulSoup(s.text, "html.parser")
-    p3=b.select('.temperature .p3')
-    pogoda1=p3[0].getText()
-    p4=b.select('.temperature .p4')
-    pogoda2=p4[0].getText()
-    p5=b.select('.temperature .p5')
-    pogoda3=p5[0].getText()
-    p6=b.select('.temperature .p6')
-    pogoda4=p6[0].getText()
-    p=b.select('.rSide .description')
-    pogoda=p[0].getText()
-    response = 'Утром :' + pogoda1 + ' ' + pogoda2 + '\n' + 'Днём :' + pogoda3 + ' ' + pogoda4 + '\n' + pogoda.strip()
-    bot.send_message(chat_id=update.message.chat_id, text=response)
-    
-# Хендлеры
-start_command_handler = CommandHandler('start', startCommand)
-pogoda_message_handler = CommandHandler('weather', pogodka)
-text_message_handler = MessageHandler(Filters.text, textMessage)
-
-# Добавляем хендлеры в диспетчер
-dispatcher.add_handler(start_command_handler)
-dispatcher.add_handler(pogoda_message_handler)
-dispatcher.add_handler(text_message_handler)
-
-# Начинаем поиск обновлений
-updater.start_polling()
-
-# Останавливаем бота, если были нажаты Ctrl + C
-updater.idle()
+Usage:
+Example of a bot-user conversation using ConversationHandler.
+Send /start to initiate the conversation.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
 """
 
-class Message(object):
-    def __init__(self, text, **options):
-        self.text = text
-        self.options = options
+from telegram import ReplyKeyboardMarkup
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler,
+                          ConversationHandler)
+
+import logging
+
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
+CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
+
+reply_keyboard = [['Age', 'Favourite colour'],
+                  ['Number of siblings', 'Something else...'],
+                  ['Done']]
+markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
-class Markdown(Message):
-    def __init__(self, text, **options):
-        super(Markup, self).__init__(text, parse_mode="Markdown", **options)
+def facts_to_str(user_data):
+    facts = list()
+
+    for key, value in user_data.items():
+        facts.append('{} - {}'.format(key, value))
+
+    return "\n".join(facts).join(['\n', '\n'])
 
 
-class HTML(Message):
-    def __init__(self, text, **options):
-        super(HTML, self).__init__(text, parse_mode="HTML", **options)
+def start(bot, update):
+    update.message.reply_text(
+        "Hi! My name is Doctor Botter. I will hold a more complex conversation with you. "
+        "Why don't you tell me something about yourself?",
+        reply_markup=markup)
+
+    return CHOOSING
 
 
-class DialogBot(object):
+def regular_choice(bot, update, user_data):
+    text = update.message.text
+    user_data['choice'] = text
+    update.message.reply_text(
+        'Your {}? Yes, I would love to hear about that!'.format(text.lower()))
 
-    def __init__(self, token, generator):
-        self.updater = Updater(token=token)  # заводим апдейтера
-        handler = MessageHandler(Filters.text | Filters.command, self.handle_message)
-        self.updater.dispatcher.add_handler(handler)  # ставим обработчик всех текстовых сообщений
-        self.handlers = collections.defaultdict(generator)  # заводим мапу "id чата -> генератор"
-
-    def start(self):
-        self.updater.start_polling()
-
-    def handle_message(self, bot, update):
-        print("Received", update.message)
-        chat_id = update.message.chat_id
-        if update.message.text == "/start":
-            # если передана команда /start, начинаем всё с начала -- для
-            # этого удаляем состояние текущего чатика, если оно есть
-            self.handlers.pop(chat_id, None)
-        if chat_id in self.handlers:
-            # если диалог уже начат, то надо использовать .send(), чтобы
-            # передать в генератор ответ пользователя
-            try:
-                answer = self.handlers[chat_id].send(update.message)
-            except StopIteration:
-                # если при этом генератор закончился -- что делать, начинаем общение с начала
-                del self.handlers[chat_id]
-                # (повторно вызванный, этот метод будет думать, что пользователь с нами впервые)
-                return self.handle_message(bot, update)
-        else:
-            # диалог только начинается. defaultdict запустит новый генератор для этого
-            # чатика, а мы должны будем извлечь первое сообщение с помощью .next()
-            # (.send() срабатывает только после первого yield)
-            answer = next(self.handlers[chat_id])
-        # отправляем полученный ответ пользователю
-        print("Answer: %r" % answer)
-        self._send_answer(bot, chat_id, answer)
-
-    def _send_answer(self, bot, chat_id, answer):
-        if isinstance(answer, str):
-            answer = Message(answer)
-        bot.sendMessage(chat_id=chat_id, text=answer.text, **answer.options)
-
-def dialog():
-    answer = yield "Здравствуйте! Как Вас зовут?"
-    # убираем ведущие знаки пунктуации, оставляем только 
-    # первую компоненту имени, пишем её с заглавной буквы
-    name = answer.text.rstrip(".!").split()[0].capitalize()
-    answer = yield "Приятно познакомиться, %s.В каком городе Вы сейчас находитесь?" %name
-    likes_python = yield from ask_yes_or_no("Хотели бы Вы ознакомиться с достопримечательностями этого города?")
-    if likes_python:
-        #answer = yield from discuss_good_python(name)
-        answer = yield from Ufa(name)
-    else:
-        answer = yield from discuss_bad_python(name)
+    return TYPING_REPLY
 
 
-def ask_yes_or_no(question):
-    answer = yield question
-    while not ("да" in answer.text.lower() or "нет" in answer.text.lower()):
-        answer = yield HTML("Так <b>да</b> или <b>нет</b>?")
-    return "да" in answer.text.lower()
+def custom_choice(bot, update):
+    update.message.reply_text('Alright, please send me the category first, '
+                              'for example "Most impressive skill"')
+
+    return TYPING_CHOICE
 
 
-def discuss_good_python(name):
-    #answer = yield 
-    pages = []
-    index_page = requests.get('https://kudago.com/ufa/attractions/')
-    tree_index = html.fromstring(index_page.content)
+def received_information(bot, update, user_data):
+    text = update.message.text
+    category = user_data['choice']
+    user_data[category] = text
+    del user_data['choice']
 
-    div = tree_index.xpath('//div[@class="clear-filters-container"]')
-    div_res = div[0].attrib['data-obj-count']
+    update.message.reply_text("Neat! Just so you know, this is what you already told me:"
+                              "{}"
+                              "You can tell me more, or change your opinion on something.".format(
+                                  facts_to_str(user_data)), reply_markup=markup)
 
-    answer = yield "Давайте посмотрим, что у нас тут есть...\n" + "Найдено " + div_res + " досторимечательности"
-    return answer
-
-def Ufa(name):
-    pages = []
-    index_page = requests.get('https://kudago.com/ufa/attractions/')
-    tree_index = html.fromstring(index_page.content)
-
-    div = tree_index.xpath('//div[@class="clear-filters-container"]')
-    div_res = div[0].attrib['data-obj-count']
-
-    print('Найдено', div_res ,'досторимечательности')
-    page_count = int(div_res) // 30 + 1
-    pages.append(requests.get('https://kudago.com/ufa/attractions/'))
-    pages.append(requests.get('https://kudago.com/ufa/attractions/?page=2'))
-    tree = []
-    names = []
-    adress = []
-    brief_description = []
-
-    for i in range(page_count):
-        tree.append(html.fromstring(pages[i].content))
-        names.append(tree[i].xpath('//a[@class="post-title-link"]//span/text()'))
-        adress.append(tree[i].xpath('//span[@class="post-detail-address-link"]//span/text()'))
-        brief_description.append(tree[i].xpath('//div[@class="post-description"]/text()'))
-
-    n = 30
-    for i in range(page_count):
-        if i == 1:
-            n = int(div_res)-30
-        for j in range(n):
-            answer = yield "Наименование: " + names[i][j] + '\nАдрес: '+ adress[i][j] +"Краткое описание: " + brief_description[i][j].strip() + "\n"
-    return answer
-"""
-       likes_article = yield from ask_yes_or_no("Ага. А как вам, кстати, статья на Хабре? Понравилась?")
-    if likes_article:
-        answer = yield "Чудно!"
-    else:
-        answer = yield "Жалко."
-    """
+    return CHOOSING
 
 
-def discuss_bad_python(name):
-    likes_article = yield from ask_yes_or_no(
-        "Окей. Как насчет интересного факта? Просто скажите да или нет")
-    if likes_article:
-        city_page = requests.get('https://fishki.net/1588575-15-faktov-ob-ufe-i-ufimcah-kotorye-nuzhno-znat-gostjam.html/')
-        tree_city = html.fromstring(city_page.content)
-        descriotion = tree_city.xpath('//div[@class="content__text"]//p[@itemprop="description"]/text()')
-        #for i in descriotion:
-        answer = yield descriotion[10][4:]
-    else:
-        answer = yield "Жаль, что я ничем не смог помочь. Приятно было пообщаться."
-    return answer
+def done(bot, update, user_data):
+    if 'choice' in user_data:
+        del user_data['choice']
 
-#def Ufa():
+    update.message.reply_text("I learned these facts about you:"
+                              "{}"
+                              "Until next time!".format(facts_to_str(user_data)))
 
-if __name__ == "__main__":
-    dialog_bot = DialogBot('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI', dialog)
-    dialog_bot.start()
+    user_data.clear()
+    return ConversationHandler.END
+
+
+def error(bot, update, error):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, error)
+
+
+def main():
+    # Create the Updater and pass it your bot's token.
+    updater = Updater('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
+
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
+
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+
+        states={
+            CHOOSING: [RegexHandler('^(Age|Favourite colour|Number of siblings)$',
+                                    regular_choice,
+                                    pass_user_data=True),
+                       RegexHandler('^Something else...$',
+                                    custom_choice),
+                       ],
+
+            TYPING_CHOICE: [MessageHandler(Filters.text,
+                                           regular_choice,
+                                           pass_user_data=True),
+                            ],
+
+            TYPING_REPLY: [MessageHandler(Filters.text,
+                                          received_information,
+                                          pass_user_data=True),
+                           ],
+        },
+
+        fallbacks=[RegexHandler('^Done$', done, pass_user_data=True)]
+    )
+
+    dp.add_handler(conv_handler)
+
+    # log all errors
+    dp.add_error_handler(error)
+
+    # Start the Bot
+    updater.start_polling()
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
+    updater.idle()
+
+
+if __name__ == '__main__':
+    main()
+
