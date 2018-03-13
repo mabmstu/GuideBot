@@ -26,41 +26,36 @@ def button1(bot, update):
         bot.edit_message_text(text="Отлично!",
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
-class Ufa:        
-    updater = Updater('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
+
+
     
-    def __init__(self,updater):
-        updater.dispatcher.add_handler(CommandHandler('Ufa', Ufa1))
-        updater.dispatcher.add_handler(CallbackQueryHandler(button2))
-    
-    def db_connection(self):
-        conn = sqlite3.connect("Cities.db") 
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Ufa")
-        return cursor
+def db_connection():
+    conn = sqlite3.connect("Cities.db") 
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Ufa")
+    return cursor
         
-    def Ufa1(self,bot, update):
-        print(update)
-        cursor = db_connection() 
-        data = cursor.fetchall()
-        keyboard = []
-        for i in range(52):
-            keyboard.append([InlineKeyboardButton(data[i][1], callback_data=str(i))])
-        #keyboard.append([InlineKeyboardButton("Далее..", callback_data= str(10))]) 
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('Что Вам наиболее интересно?', reply_markup=reply_markup)
+def Ufa(bot, update):
+    print(update)
+    cursor = db_connection() 
+    data = cursor.fetchall()
+    keyboard = []
+    for i in range(52):
+        keyboard.append([InlineKeyboardButton(data[i][1], callback_data=str(i))])
+    #keyboard.append([InlineKeyboardButton("Далее..", callback_data= str(10))]) 
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Что Вам наиболее интересно?', reply_markup=reply_markup)       
         
-        
-    def button2(self,bot, update):
-        cursor = db_connection()
-        data = cursor.fetchall()
-        query = update.callback_query
-        #print(bot.getUpdates())
-        for i in range(52):
-            if query.data == str(i):
-                 bot.edit_message_text(text="Адрес:"+ data[i][2]+"\n"+data[i][3],
-                                  chat_id=query.message.chat_id,
-                                  message_id=query.message.message_id)
+def button2(bot, update):
+    cursor = db_connection()
+    data = cursor.fetchall()
+    query = update.callback_query
+    #print(bot.getUpdates())
+    for i in range(52):
+        if query.data == str(i):
+                bot.edit_message_text(text=data[i][1]+"\n"+"Адрес:"+ data[i][2]+"\n"+data[i][3],
+                                chat_id=query.message.chat_id,
+                                message_id=query.message.message_id)
 
 
     
@@ -76,8 +71,9 @@ def main():
     # Create the Updater and pass it your bot's token.
     updater = Updater('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
     updater.dispatcher.add_handler(CommandHandler('start', start))
-    updater.dispatcher.add_handler(CallbackQueryHandler(button1))
-    Ufa
+    #updater.dispatcher.add_handler(CallbackQueryHandler(button1))
+    updater.dispatcher.add_handler(CommandHandler('Ufa', Ufa))
+    updater.dispatcher.add_handler(CallbackQueryHandler(button2))
     updater.dispatcher.add_handler(CommandHandler('help', help))
     updater.dispatcher.add_error_handler(error)
 
