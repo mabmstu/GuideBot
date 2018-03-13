@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Basic example for a bot that uses inline keyboards.
-
-# This program is dedicated to the public domain under the CC0 license.
-"""
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
@@ -14,20 +8,18 @@ logger = logging.getLogger(__name__)
 
 
 def start(bot, update):
-    keyboard = [[InlineKeyboardButton("Option 1", callback_data='1'),
-                 InlineKeyboardButton("Option 2", callback_data='2')],
-
-                [InlineKeyboardButton("Option 3", callback_data='3')]]
+    keyboard = [[InlineKeyboardButton("Да", callback_data='Отлично'),
+                 InlineKeyboardButton("Нет", callback_data='Хорошего настроения!')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    update.message.reply_text('Please choose:', reply_markup=reply_markup)
+    update.message.reply_text('Здравствуйте! Сейчас вы находитесь в Уфе. Хотите ознакомиться с достопримечательностями этого города?:', reply_markup=reply_markup)
 
 
 def button(bot, update):
     query = update.callback_query
 
-    bot.edit_message_text(text="Selected option: {}".format(query.data),
+    bot.edit_message_text(text="{}".format(query.data),
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
 
