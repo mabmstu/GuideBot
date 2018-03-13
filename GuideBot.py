@@ -11,12 +11,12 @@ def start(bot, update):
     keyboard = [[InlineKeyboardButton("Да", callback_data='Отлично'),
                  InlineKeyboardButton("Нет", callback_data='Хорошего настроения!')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-update.message.reply_text('Здравствуйте! Сейчас вы находитесь в Уфе. Хотите ознакомиться с достопримечательностями этого города?', reply_markup=reply_markup)
+    update.message.reply_text('Здравствуйте! Сейчас вы находитесь в Уфе. Хотите ознакомиться с достопримечательностями этого города?', reply_markup=reply_markup)
 
 
 def button(bot, update):
     query = update.callback_query
-    if update.callback_query.text() == "Да":
+    if query.data == "Да":
         bot.edit_message_text(text="{}".format(query.data),
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id)
