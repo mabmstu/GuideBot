@@ -29,17 +29,17 @@ def button1(bot, update):
 class Ufa:        
     updater = Updater('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
     
-    def __init__(updater):
+    def __init__(self,updater):
         updater.dispatcher.add_handler(CommandHandler('Ufa', Ufa1))
         updater.dispatcher.add_handler(CallbackQueryHandler(button2))
     
-    def db_connection():
+    def db_connection(self):
         conn = sqlite3.connect("Cities.db") 
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Ufa")
         return cursor
         
-    def Ufa1(bot, update):
+    def Ufa1(self,bot, update):
         print(update)
         cursor = db_connection() 
         data = cursor.fetchall()
@@ -51,7 +51,7 @@ class Ufa:
         update.message.reply_text('Что Вам наиболее интересно?', reply_markup=reply_markup)
         
         
-    def button2(bot, update):
+    def button2(self,bot, update):
         cursor = db_connection()
         data = cursor.fetchall()
         query = update.callback_query
