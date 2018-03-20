@@ -1,6 +1,6 @@
 import logging
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup
 import sqlite3
 import telegram
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Bott:
    
     def __init__(self,token):
-        print(dir(telegram.Message.reply_text))
+        #print(dir(telegram.Message.reply_text))
         self.updater = Updater(token = token)
         self.i = 0
         self.begin = 0
@@ -21,7 +21,6 @@ class Bott:
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.btn_handler))
         self.updater.dispatcher.add_handler(CommandHandler('help', self.help))
         self.updater.dispatcher.add_error_handler(self.error)
-        
         
 
     def start_handler(self):
@@ -66,6 +65,8 @@ class Bott:
             for i in range(self.begin, self.end):
                 self.keyboard.append([InlineKeyboardButton(self.data[i][1], callback_data = str(i))])
             self.keyboard.append([InlineKeyboardButton("Далее", callback_data = 'more')])
+            if self.begin > 0:
+                self.keyboard.append([InlineKeyboardButton("Назад", callback_data = 'назад')])
         else:
             self.keyboard.append([InlineKeyboardButton("Заново", callback_data = 'Заново')])
             self.keyboard.append([InlineKeyboardButton("Нет", callback_data = 'Нет')])
@@ -85,10 +86,8 @@ class Bott:
             self.data = self.cursor.fetchall()
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)  
-            self.update.message.reply_text('Что Вам наиболее интересно?)',
-                                  reply_markup = reply_markup,
-                                               chat_id = query.message.chat_id,
-                                               message_id = query.message.message_id)         
+            self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup)         
         elif query.data == 'more':
             self.begin += 10
             self.end += 10
@@ -100,15 +99,35 @@ class Bott:
                              chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
             if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно?)',
-                                  reply_markup = reply_markup,
-                                               chat_id = query.message.chat_id,
-                                               message_id = query.message.message_id )
+                self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup )
+            self.updateKeyboard(self.begin,self.end)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)
+            self.bot.edit_message_text(text="...",
+                             chat_id = query.message.chat_id,
+                              message_id = query.message.message_id)
+            if(self.begin < self.end):
+                self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup )
             else:
-                self.update.message.reply_text('Достопримечательности кончились. Показать заново?',
-                                  reply_markup = reply_markup,
-                                               chat_id = query.message.chat_id,
-                                               message_id = query.message.message_id)
+                self.update.message.reply_text('Достопримечательности закончились. Показать заново?',
+                                  reply_markup = reply_markup)
+        elif query.data == 'назад':
+
+            if self.end == len(self.data):
+                self.end -= len(self.data) % 10
+                self.begin -= 10
+            else:
+                self.begin -= 10
+                self.end -= 10
+            self.updateKeyboard(self.begin,self.end)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)
+            self.bot.edit_message_text(text="...",
+                             chat_id = query.message.chat_id,
+                              message_id = query.message.message_id)
+            if(self.begin < self.end):
+                self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup )
         elif query.data == 'Заново':
             self.begin = 0
             self.end = 10
@@ -118,19 +137,24 @@ class Bott:
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)
             if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
-                                  reply_markup = reply_markup,
-                                               chat_id = query.message.chat_id,
-                                               message_id = query.message.message_id)
+                self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup)
         else:
             for i in range(self.begin, self.end):
                 if query.data == str(i):
+                    self.keyb = [[InlineKeyboardButton('Назад', callback_data = 'back')]]
+                    reply_markup = InlineKeyboardMarkup(self.keyb)
                     bot.edit_message_text(text=self.data[i][1]+"\n"+"Адрес:"+ self.data[i][2]+"\n"+self.data[i][3],
                                     chat_id = query.message.chat_id,
-                                    message_id = query.message.message_id)
+                                    message_id = query.message.message_id, reply_markup =reply_markup )
+            if query.data == 'back':
+                self.updateKeyboard(self.begin,self.end)
+                reply_markup = InlineKeyboardMarkup(self.keyboard)  
+                self.update.message.reply_text('Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup) 
+                    
+                    
  
-
-
     
 #def main():
     # Create the Updater and pass it your bot's token.
