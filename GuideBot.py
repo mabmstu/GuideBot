@@ -123,10 +123,10 @@ class Bott:
 
 
     
-def main():
+#def main():
     # Create the Updater and pass it your bot's token.
-    bott = Bott('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
-    bott.start_handler()
+bott = Bott('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
+bott.start_handler()
    
-if __name__ == '__main__':
-    main()
+#if __name__ == '__main__':
+ #   main()
