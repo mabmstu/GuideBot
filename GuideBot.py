@@ -83,7 +83,7 @@ class Bott:
             self.cursor = self.db_connection()
             self.data = self.cursor.fetchall()
             self.updateKeyboard(self.begin,self.end)
-            self.reply_markup = InlineKeyboardMarkup(self.keyboard)  
+            reply_markup = InlineKeyboardMarkup(self.keyboard)  
             self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
                                   reply_markup = reply_markup)         
         if query.data == 'more':
@@ -92,7 +92,7 @@ class Bott:
             if self.end > len(self.data):
                 self.end = len(self.data)
             self.updateKeyboard(self.begin,self.end)
-            self.reply_markup = InlineKeyboardMarkup(self.keyboard)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)
             self.bot.edit_message_text(text="...",
                              chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
@@ -109,13 +109,13 @@ class Bott:
                              chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
             self.updateKeyboard(self.begin,self.end)
-            self.reply_markup = InlineKeyboardMarkup(self.keyboard)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)
             if(self.begin < self.end):
                 self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
                                   reply_markup = reply_markup)
         else:
             for i in range(self.begin, self.end):
-                if query.data == str(i):
+                if self.query.data == str(i):
                     bot.edit_message_text(text=self.data[i][1]+"\n"+"Адрес:"+ self.data[i][2]+"\n"+self.data[i][3],
                                     chat_id = query.message.chat_id,
                                     message_id = query.message.message_id)
