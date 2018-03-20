@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class Bott:
    
     def __init__(self,token):
+        print(dir(telegram.Message.reply_text))
         self.updater = Updater(token = token)
         self.i = 0
         self.begin = 0
@@ -74,18 +75,20 @@ class Bott:
         query = update.callback_query       
         if query.data == "Нет":
         	self.bot.edit_message_text(text="До свидания! Хорошего настроения!",
-                              chat_id = self.query.message.chat_id,
-                              message_id = self.query.message.message_id)
+                              chat_id = query.message.chat_id,
+                              message_id = query.message.message_id)
         elif query.data == "Да":
             bot.edit_message_text(text="Отлично!",
-                              chat_id = self.query.message.chat_id,
-                              message_id = self.query.message.message_id)
+                              chat_id = query.message.chat_id,
+                              message_id = query.message.message_id)
             self.cursor = self.db_connection()
             self.data = self.cursor.fetchall()
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)  
             self.update.message.reply_text('Что Вам наиболее интересно?)',
-                                  reply_markup = reply_markup)         
+                                  reply_markup = reply_markup,
+                                               chat_id = query.message.chat_id,
+                                               message_id = query.message.message_id)         
         elif query.data == 'more':
             self.begin += 10
             self.end += 10
@@ -94,14 +97,18 @@ class Bott:
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)
             self.bot.edit_message_text(text="...",
-                             chat_id = self.query.message.chat_id,
-                              message_id = self.query.message.message_id)
+                             chat_id = query.message.chat_id,
+                              message_id = query.message.message_id)
             if(self.begin < self.end):
                 self.update.message.reply_text('Что Вам наиболее интересно?)',
-                                  reply_markup = reply_markup)
+                                  reply_markup = reply_markup,
+                                               chat_id = query.message.chat_id,
+                                               message_id = query.message.message_id )
             else:
                 self.update.message.reply_text('Достопримечательности кончились. Показать заново?',
-                                  reply_markup = reply_markup)
+                                  reply_markup = reply_markup,
+                                               chat_id = query.message.chat_id,
+                                               message_id = query.message.message_id)
         elif query.data == 'Заново':
             self.begin = 0
             self.end = 10
@@ -112,13 +119,15 @@ class Bott:
             reply_markup = InlineKeyboardMarkup(self.keyboard)
             if(self.begin < self.end):
                 self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
-                                  reply_markup = reply_markup)
+                                  reply_markup = reply_markup,
+                                               chat_id = query.message.chat_id,
+                                               message_id = query.message.message_id)
         else:
             for i in range(self.begin, self.end):
                 if query.data == str(i):
                     bot.edit_message_text(text=self.data[i][1]+"\n"+"Адрес:"+ self.data[i][2]+"\n"+self.data[i][3],
-                                    chat_id = self.query.message.chat_id,
-                                    message_id = self.query.message.message_id)
+                                    chat_id = query.message.chat_id,
+                                    message_id = query.message.message_id)
  
 
 
