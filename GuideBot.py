@@ -76,7 +76,7 @@ class Bott:
         	self.bot.edit_message_text(text="До свидания! Хорошего настроения!",
                               chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
-        if query.data == "Да":
+        elif query.data == "Да":
             bot.edit_message_text(text="Отлично!",
                               chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
@@ -84,9 +84,9 @@ class Bott:
             self.data = self.cursor.fetchall()
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)  
-            self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
+            self.update.message.reply_text('Что Вам наиболее интересно?)',
                                   reply_markup = reply_markup)         
-        if query.data == 'more':
+        elif query.data == 'more':
             self.begin += 10
             self.end += 10
             if self.end > len(self.data):
@@ -97,12 +97,12 @@ class Bott:
                              chat_id = query.message.chat_id,
                               message_id = query.message.message_id)
             if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно? Для продолжения нажмите на кнопку "Далее" и введите что-нибудь(стикер, текст..)',
+                self.update.message.reply_text('Что Вам наиболее интересно?)',
                                   reply_markup = reply_markup)
             else:
                 self.update.message.reply_text('Достопримечательности кончились. Показать заново?',
                                   reply_markup = reply_markup)
-        if query.data == 'Заново':
+        elif query.data == 'Заново':
             self.begin = 0
             self.end = 10
             self.bot.edit_message_text(text="...",
