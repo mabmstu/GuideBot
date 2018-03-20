@@ -86,7 +86,7 @@ class Bott:
             reply_markup = InlineKeyboardMarkup(self.keyboard)  
             self.update.message.reply_text('Что Вам наиболее интересно?)',
                                   reply_markup = reply_markup)
-           for i in range(self.begin, self.end):
+            for i in range(self.begin, self.end):
                 if self.query.data == str(i):
                     bot.edit_message_text(text=self.data[i][1]+"\n"+"Адрес:"+ self.data[i][2]+"\n"+self.data[i][3],
                                     chat_id = query.message.chat_id,
