@@ -1,18 +1,32 @@
 import logging
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 import sqlite3
 import telegram
 
+
+
+#keyboard = [[KeyboardButton("Да", request_location = True),
+                 #    KeyboardButton("Нет", callback_data='Нет')]]
+       # self.reply_markup = ReplyKeyboardMarkup(keyboard)
+       # update.message.reply_text( 'Здравствуйте! Не могли бы Вы прделиться своим местоположением?', reply_markup = self.reply_markup)
+
+        
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+Users_Data = {}
+Users_Begins = {}
+Users_Ends = {}
+
+Cities = ['Екатеринбург', 'Нижний Новгород', 'Краснодар', 'Красноярск',
+          'Новосибирск', 'Санкт-Петербург',  'Самара', 'Сочи',  'Уфа']
+
 class Bott:
    
     def __init__(self,token):
-        #print(dir(telegram.Message.reply_text))
         self.updater = Updater(token = token)
         self.i = 0
         self.begin = 0
@@ -20,6 +34,7 @@ class Bott:
         self.updater.dispatcher.add_handler(CommandHandler('start', self.start))
         self.updater.dispatcher.add_handler(CallbackQueryHandler(self.btn_handler))
         self.updater.dispatcher.add_handler(CommandHandler('help', self.help))
+        self.updater.dispatcher.add_handler(MessageHandler(Filters.all, self.msg_handler))
         self.updater.dispatcher.add_error_handler(self.error)
         
 
@@ -30,15 +45,24 @@ class Bott:
     def start(self, bot ,update):
         self.bot = bot
         self.update = update
+        self.marshr = 0
         self.begin = 0
         self.end = 10
         self.update.message.reply_text("Hello!")
-        self.keyboard = [[InlineKeyboardButton("Да", callback_data='Да'),
-                     InlineKeyboardButton("Нет", callback_data='Нет')]]
-        self.reply_markup = InlineKeyboardMarkup(self.keyboard)
-        update.message.reply_text('Здравствуйте! Сейчас вы находитесь в Уфе.'
-        'Хотите ознакомиться с достопримечательностями этого города?', reply_markup = self.reply_markup)
+
+        self.keyboard = []
+        for city in Cities:
+            self.keyboard.append([InlineKeyboardButton(city, callback_data=city)])
             
+        self.keyboard.append([InlineKeyboardButton("Не хочу", callback_data='Нет')])
+        #self.keyboard = [[InlineKeyboardButton("Да", callback_data='Да'),
+                     #InlineKeyboardButton("Нет", callback_data='Нет')]]
+
+        
+        self.reply_markup = InlineKeyboardMarkup(self.keyboard)
+        update.message.reply_text( 'Здравствуйте! Выберите город, чтоб ознакомиться с достопримечательностями'
+                        , reply_markup = self.reply_markup)
+           
 
     def help(self,bot,update):
         self.update = update
@@ -49,10 +73,10 @@ class Bott:
     def error(self, bot, update, error):
         logger.warning('Update "%s" caused error "%s"', update, error)
         
-    def db_connection(self):
-        conn = sqlite3.connect("Cities.db") 
+    def db_connection(self, city):
+        conn = sqlite3.connect("Overall.db") 
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Ufa")
+        cursor.execute("SELECT * FROM sight WHERE city = '{}'".format(city))
         return cursor      
             
     def Ufa(self,bot,update):
@@ -63,7 +87,7 @@ class Bott:
         self.keyboard = []
         if(self.begin < self.end):
             for i in range(self.begin, self.end):
-                self.keyboard.append([InlineKeyboardButton(self.data[i][1], callback_data = str(i))])
+                self.keyboard.append([InlineKeyboardButton(self.data[i][0], callback_data = str(i))])
             self.keyboard.append([InlineKeyboardButton("Далее", callback_data = 'more')])
             if self.begin > 0:
                 self.keyboard.append([InlineKeyboardButton("Назад", callback_data = 'назад')])
@@ -71,87 +95,142 @@ class Bott:
             self.keyboard.append([InlineKeyboardButton("Заново", callback_data = 'Заново')])
             self.keyboard.append([InlineKeyboardButton("Нет", callback_data = 'Нет')])
 
+
+
+    def msg_handler(self, bot, update):
+        message = update.message
+        if message.location != None:
+            #print(message.location)
+            longit = message.location['longitude']
+            latid = message.location['latitude']
+
         
     def btn_handler(self,bot,update):      
-        query = update.callback_query       
+        query = update.callback_query
+        id = query.message.chat_id
+        m_id = query.message.message_id
         if query.data == "Нет":
-        	self.bot.edit_message_text(text="До свидания! Хорошего настроения!",
-                              chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
-        elif query.data == "Да":
-            bot.edit_message_text(text="Отлично!",
-                              chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
-            self.cursor = self.db_connection()
-            self.data = self.cursor.fetchall()
+            bot.edit_message_text(text="До свидания! Хорошего настроения!",
+                              chat_id = id,
+                              message_id = m_id)
+        elif query.data in Cities:
+            bot.delete_message(chat_id = id, message_id = m_id)
+            self.cursor = self.db_connection(query.data)
+            
+            Users_Data[id] = self.cursor.fetchall()
+            Users_Begins[id] = 0
+            Users_Ends[id] = 10
+            print("\nNew user " + str(id) + " pressed: " + query.data)
+            
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)  
-            self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup)         
+            bot.send_message(chat_id = id, message_id = m_id, text ='Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup, parse_mode = 'Markdown')
         elif query.data == 'more':
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            
             self.begin += 10
             self.end += 10
             if self.end > len(self.data):
                 self.end = len(self.data)
-            self.updateKeyboard(self.begin,self.end)
-            reply_markup = InlineKeyboardMarkup(self.keyboard)
-            self.bot.edit_message_text(text="...",
-                             chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
-            if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup )
-            self.updateKeyboard(self.begin,self.end)
-            reply_markup = InlineKeyboardMarkup(self.keyboard)
-            self.bot.edit_message_text(text="...",
-                             chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
-            if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup )
-            else:
-                self.update.message.reply_text('Достопримечательности закончились. Показать заново?',
-                                  reply_markup = reply_markup)
-        elif query.data == 'назад':
 
+            Users_Begins[id] = self.begin
+            Users_Ends[id] = self.end
+                
+            bot.delete_message(chat_id = id, message_id = m_id)
+            self.updateKeyboard(self.begin,self.end)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)
+            if(self.begin < self.end):
+                bot.send_message(chat_id = id, message_id = m_id, text ='Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup , parse_mode = 'Markdown')
+            else:
+                bot.send_message(chat_id = id, message_id = m_id, text ='Достопримечательности закончились. Показать заново?',
+                                  reply_markup = reply_markup, parse_mode = 'Markdown')
+        elif query.data == 'назад':
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            
             if self.end == len(self.data):
                 self.end -= len(self.data) % 10
                 self.begin -= 10
             else:
                 self.begin -= 10
                 self.end -= 10
+
+            Users_Begins[id] = self.begin
+            Users_Ends[id] = self.end
+                
+            bot.delete_message(chat_id = id, message_id = m_id)
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)
-            self.bot.edit_message_text(text="...",
-                             chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
             if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup )
+                bot.send_message(chat_id = id, message_id = m_id, text ='Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup , parse_mode = 'Markdown')
         elif query.data == 'Заново':
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            
             self.begin = 0
             self.end = 10
-            self.bot.edit_message_text(text="...",
-                             chat_id = query.message.chat_id,
-                              message_id = query.message.message_id)
+
+            Users_Begins[id] = self.begin
+            Users_Ends[id] = self.end
+            
+            bot.delete_message(chat_id = id, message_id = m_id)
             self.updateKeyboard(self.begin,self.end)
             reply_markup = InlineKeyboardMarkup(self.keyboard)
             if(self.begin < self.end):
-                self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup)
+                bot.send_message(chat_id = id, message_id = m_id, text ='Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup, parse_mode = 'Markdown')
+        elif query.data == 'back':
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            
+            bot.delete_message(chat_id = id, message_id = m_id)
+            self.updateKeyboard(self.begin,self.end)
+            reply_markup = InlineKeyboardMarkup(self.keyboard)  
+            bot.send_message(chat_id = id, message_id = m_id, text ='Что Вам наиболее интересно?',
+                                  reply_markup = reply_markup, parse_mode = 'Markdown')
+        elif query.data == 'delphoto':
+            bot.delete_message(chat_id = id, message_id = m_id)
+        elif query.data == 'Маршрут':
+            keyboard = [[KeyboardButton("Да", request_location = True),
+                  KeyboardButton("Нет", callback_data='Нет')]]
+            self.reply_markup = ReplyKeyboardMarkup(keyboard)
+            bot.send_message(chat_id = id, message_id = m_id, text = 'Не могли бы Вы поделиться своим местоположением?', reply_markup = self.reply_markup)
+            
         else:
             for i in range(self.begin, self.end):
                 if query.data == str(i):
-                    self.keyb = [[InlineKeyboardButton('Назад', callback_data = 'back')]]
+                    self.data = Users_Data.get(id)
+                    self.begin = Users_Begins.get(id)
+                    self.end = Users_Ends.get(id)
+                    
+                    self.marshr = i
+                    bot.delete_message(chat_id = id, message_id = m_id)
+                    keyb = [[InlineKeyboardButton('Закрыть', callback_data = 'delphoto')]]
+                    reply_markup = InlineKeyboardMarkup(keyb)
+                    bot.send_photo(chat_id = id, photo = self.data[i][7],
+                                   reply_markup = reply_markup)
+                    
+                    self.keyb = [[InlineKeyboardButton('Проложить маршрут', callback_data = 'Маршрут')],
+                                 [InlineKeyboardButton('Назад', callback_data = 'back')]]
                     reply_markup = InlineKeyboardMarkup(self.keyb)
-                    bot.edit_message_text(text=self.data[i][1]+"\n"+"Адрес:"+ self.data[i][2]+"\n"+self.data[i][3],
-                                    chat_id = query.message.chat_id,
-                                    message_id = query.message.message_id, reply_markup =reply_markup )
-            if query.data == 'back':
-                self.updateKeyboard(self.begin,self.end)
-                reply_markup = InlineKeyboardMarkup(self.keyboard)  
-                self.update.message.reply_text('Что Вам наиболее интересно?',
-                                  reply_markup = reply_markup) 
+                    bot.send_message(chat_id = id, message_id = m_id,
+                                  text =self.data[i][0]+"\n"+"Адрес: "+ self.data[i][1]+"\n"+self.data[i][3]+"\n"
+                                     +"Расписание: "+ self.data[i][4],
+                                  reply_markup = reply_markup, parse_mode = 'Markdown') 
+                    
+            
                     
                     
  
