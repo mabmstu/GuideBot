@@ -82,11 +82,6 @@ class Bott:
             self.keyboard.append([InlineKeyboardButton("Заново", callback_data = 'Заново')])
             self.keyboard.append([InlineKeyboardButton("Нет", callback_data = 'Нет')])
 
-
-
-    def msg_handler(self, bot, update):
-        message = update.message
-
         
     def btn_handler(self,bot,update):      
         query = update.callback_query
