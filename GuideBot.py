@@ -3,15 +3,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageH
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 import sqlite3
 import telegram
-
-
-
-#keyboard = [[KeyboardButton("Да", request_location = True),
-                 #    KeyboardButton("Нет", callback_data='Нет')]]
-       # self.reply_markup = ReplyKeyboardMarkup(keyboard)
-       # update.message.reply_text( 'Здравствуйте! Не могли бы Вы прделиться своим местоположением?', reply_markup = self.reply_markup)
-
-        
+      
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -20,6 +12,7 @@ logger = logging.getLogger(__name__)
 Users_Data = {}
 Users_Begins = {}
 Users_Ends = {}
+Marshrs = {}
 
 Cities = ['Екатеринбург', 'Нижний Новгород', 'Краснодар', 'Красноярск',
           'Новосибирск', 'Санкт-Петербург',  'Самара', 'Сочи',  'Уфа']
@@ -55,10 +48,7 @@ class Bott:
             self.keyboard.append([InlineKeyboardButton(city, callback_data=city)])
             
         self.keyboard.append([InlineKeyboardButton("Не хочу", callback_data='Нет')])
-        #self.keyboard = [[InlineKeyboardButton("Да", callback_data='Да'),
-                     #InlineKeyboardButton("Нет", callback_data='Нет')]]
-
-        
+       
         self.reply_markup = InlineKeyboardMarkup(self.keyboard)
         update.message.reply_text( 'Здравствуйте! Выберите город, чтоб ознакомиться с достопримечательностями'
                         , reply_markup = self.reply_markup)
@@ -79,9 +69,6 @@ class Bott:
         cursor.execute("SELECT * FROM sight WHERE city = '{}'".format(city))
         return cursor      
             
-    def Ufa(self,bot,update):
-        print('Ufa')
-        
         
     def updateKeyboard(self, begin, end):
         self.keyboard = []
@@ -99,10 +86,6 @@ class Bott:
 
     def msg_handler(self, bot, update):
         message = update.message
-        if message.location != None:
-            #print(message.location)
-            longit = message.location['longitude']
-            latid = message.location['latitude']
 
         
     def btn_handler(self,bot,update):      
@@ -203,11 +186,14 @@ class Bott:
         elif query.data == 'delphoto':
             bot.delete_message(chat_id = id, message_id = m_id)
         elif query.data == 'Маршрут':
-            keyboard = [[KeyboardButton("Да", request_location = True),
-                  KeyboardButton("Нет", callback_data='Нет')]]
-            self.reply_markup = ReplyKeyboardMarkup(keyboard)
-            bot.send_message(chat_id = id, message_id = m_id, text = 'Не могли бы Вы поделиться своим местоположением?', reply_markup = self.reply_markup)
-            
+            self.data = Users_Data.get(id)
+            self.begin = Users_Begins.get(id)
+            self.end = Users_Ends.get(id)
+            self.marshr = Marshrs.get(id)
+            long = self.data[self.marshr][6]
+            lat = self.data[self.marshr][5]
+            bot.send_location(chat_id=id,message_id= m_id,
+                                  longitude = long, latitude=lat)        
         else:
             for i in range(self.begin, self.end):
                 if query.data == str(i):
@@ -216,13 +202,14 @@ class Bott:
                     self.end = Users_Ends.get(id)
                     
                     self.marshr = i
+                    Marshrs[id] = i
                     bot.delete_message(chat_id = id, message_id = m_id)
                     keyb = [[InlineKeyboardButton('Закрыть', callback_data = 'delphoto')]]
                     reply_markup = InlineKeyboardMarkup(keyb)
                     bot.send_photo(chat_id = id, photo = self.data[i][7],
                                    reply_markup = reply_markup)
                     
-                    self.keyb = [[InlineKeyboardButton('Проложить маршрут', callback_data = 'Маршрут')],
+                    self.keyb = [[InlineKeyboardButton('Показать на карте', callback_data = 'Маршрут')],
                                  [InlineKeyboardButton('Назад', callback_data = 'back')]]
                     reply_markup = InlineKeyboardMarkup(self.keyb)
                     bot.send_message(chat_id = id, message_id = m_id,
@@ -234,11 +221,8 @@ class Bott:
                     
                     
  
-    
-#def main():
+
     # Create the Updater and pass it your bot's token.
 bott = Bott('495453959:AAH26CmZCbrHcGv0N60y4sw6cTE_OpUtsGI')
 bott.start_handler()
-   
-#if __name__ == '__main__':
- #   main()
+
