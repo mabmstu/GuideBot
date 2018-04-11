@@ -1,8 +1,8 @@
 import logging
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
-import sqlite3
 import telegram
+import psycopg2
       
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -64,7 +64,10 @@ class Bott:
         logger.warning('Update "%s" caused error "%s"', update, error)
         
     def db_connection(self, city):
-        conn = sqlite3.connect("Overall.db") 
+        try:
+            conn = psycopg2.connect("dbname='fn1181_2018' user='student' host='195.19.32.74' password='bmstu' port='5432'")
+        except:
+            print("I am unable to connect to the database")
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM sight WHERE city = '{}'".format(city))
         return cursor      
@@ -74,7 +77,7 @@ class Bott:
         self.keyboard = []
         if(self.begin < self.end):
             for i in range(self.begin, self.end):
-                self.keyboard.append([InlineKeyboardButton(self.data[i][0], callback_data = str(i))])
+                self.keyboard.append([InlineKeyboardButton(self.data[i][1], callback_data = str(i))])
             self.keyboard.append([InlineKeyboardButton("Далее", callback_data = 'more')])
             if self.begin > 0:
                 self.keyboard.append([InlineKeyboardButton("Назад", callback_data = 'назад')])
@@ -190,8 +193,8 @@ class Bott:
             self.begin = Users_Begins.get(id)
             self.end = Users_Ends.get(id)
             self.marshr = Marshrs.get(id)
-            long = self.data[self.marshr][6]
-            lat = self.data[self.marshr][5]
+            long = self.data[self.marshr][7]
+            lat = self.data[self.marshr][6]
             bot.send_location(chat_id=id,message_id= m_id,
                                   longitude = long, latitude=lat)        
         else:
@@ -206,15 +209,15 @@ class Bott:
                     bot.delete_message(chat_id = id, message_id = m_id)
                     keyb = [[InlineKeyboardButton('Закрыть', callback_data = 'delphoto')]]
                     reply_markup = InlineKeyboardMarkup(keyb)
-                    bot.send_photo(chat_id = id, photo = self.data[i][7],
+                    bot.send_photo(chat_id = id, photo = self.data[i][8],
                                    reply_markup = reply_markup)
                     
                     self.keyb = [[InlineKeyboardButton('Показать на карте', callback_data = 'Маршрут')],
                                  [InlineKeyboardButton('Назад', callback_data = 'back')]]
                     reply_markup = InlineKeyboardMarkup(self.keyb)
                     bot.send_message(chat_id = id, message_id = m_id,
-                                  text =self.data[i][0]+"\n"+"Адрес: "+ self.data[i][1]+"\n"+self.data[i][3]+"\n"
-                                     +"Расписание: "+ self.data[i][4],
+                                  text =self.data[i][1]+"\n"+"Адрес: "+ self.data[i][2]+"\n"+self.data[i][4]+"\n"
+                                     +"Расписание: "+ self.data[i][5],
                                   reply_markup = reply_markup, parse_mode = 'Markdown') 
                     
             
